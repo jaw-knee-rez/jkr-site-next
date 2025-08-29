@@ -83,12 +83,6 @@ export default function PortfolioCard({ piece, index }: PortfolioCardProps) {
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {piece.category.replace('-', ' ')}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {new Date(piece.date).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short' 
-              })}
-            </span>
           </div>
 
           {/* Title */}
