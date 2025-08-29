@@ -24,9 +24,13 @@ export interface PortfolioDetail extends PortfolioPiece {
   problemSpace: string;
   process: string;
   images: PortfolioImage[];
+  layout: 'default' | 'stacked'; // Choose between default or stacked layout
   results: {
     impact: string;
-    metrics?: string[];
+    metrics?: Array<{
+      text: string;
+      number: string;
+    }>;
     outcomes: string[];
   };
   technologies?: string[];
