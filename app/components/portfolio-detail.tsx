@@ -501,7 +501,7 @@ export default function PortfolioDetail({ piece, navigation }: PortfolioDetailPr
                     
                     {/* Large number below */}
                     <div className="mt-8 text-center">
-                      <span className="text-4xl font-light text-white">
+                      <span className="text-4xl font-light">
                         {metric.number}
                       </span>
                     </div>
