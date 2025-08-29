@@ -268,7 +268,7 @@ export default function PortfolioDetail({ piece, navigation }: PortfolioDetailPr
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            Design Outcome
+            Design Process
           </motion.h2>
           <motion.div 
             className="text-lg text-muted-foreground leading-relaxed"

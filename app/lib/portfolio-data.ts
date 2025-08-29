@@ -21,7 +21,7 @@ export const portfolioData: PortfolioDetail[] = [
     <br><br>At the time, JWM provided very little migration support for our customers. Jira's existing import experience was incredibly difficult to use for a admin new to Jira and is limited by CSV import which means a lot of data can be lost in the transition to JWM.
     The poor migration experience from other tools was a major risk to unlocking JWM's full growth potential.
     `,
-    process: `Introduce a full workflow to allow users coming from competing products to migrate their entire workflow, tasks, and users to JWM. `,
+    process: `Collaborated with Product Managers and Engineering Managers to develop a comprehensive product requirements document, incorporating current assumptions and quantitative data. Conducted competitor research and customer interviews to uncover user challenges and experiences, which informed the exploration of multiple design directions. Designed end-to-end, high-fidelity prototypes and validated them through SEQ-based usability testing to ensure a high level of ease of use. Partnered with Engineers to translate the solutions into achievable milestones, documenting the process in detailed design specifications, including accessibility (a11y) requirements.`,
     layout: 'default',
     images: [
       {
