@@ -39,10 +39,6 @@ export default function ProcessSteps({ steps }: ProcessStepsProps) {
             transition={{ duration: 0.6, delay: index * 0.1 }}
             className="relative"
           >
-                          {/* Step Number */}
-              <div className="absolute -left-2 sm:-left-4 top-0 w-6 h-6 sm:w-8 sm:h-8 bg-accent rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-accent-foreground">
-                {step.id}
-              </div>
 
               <div className="bg-card border border-border rounded-lg p-4 sm:p-6 ml-2 sm:ml-4">
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-4">
