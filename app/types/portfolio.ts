@@ -7,6 +7,20 @@ export interface PortfolioImage {
   height: number;
 }
 
+export interface PortfolioVideo {
+  src: string;
+  alt: string;
+  caption?: string;
+  width: number;
+  height: number;
+  poster?: string; // Optional poster image for video
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+}
+
+export type PortfolioMedia = PortfolioImage | PortfolioVideo;
+
 export interface PortfolioPiece {
   id: string;
   slug: string;
@@ -23,7 +37,7 @@ export interface PortfolioPiece {
 export interface PortfolioDetail extends PortfolioPiece {
   problemSpace: string;
   process: string;
-  images: PortfolioImage[];
+  images: PortfolioMedia[];
   layout: 'default' | 'stacked'; // Choose between default or stacked layout
   results: {
     impact: string;
@@ -69,7 +83,7 @@ export interface ProcessSection {
   description: string;
   steps?: string[];
   tools?: string[];
-  examples?: PortfolioImage[];
+  examples?: PortfolioMedia[];
 }
 
 export interface DesignProcess {

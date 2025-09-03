@@ -3,7 +3,8 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import OptimizedImage from './optimized-image';
-import { PortfolioDetail as PortfolioDetailType, PortfolioNavigation } from '../types/portfolio';
+import OptimizedVideo from './optimized-video';
+import { PortfolioDetail as PortfolioDetailType, PortfolioNavigation, PortfolioMedia, PortfolioImage, PortfolioVideo } from '../types/portfolio';
 import Navigation from './navigation';
 import Breadcrumbs from './breadcrumbs';
 import PasswordProtection from './password-protection';
@@ -15,6 +16,11 @@ interface PortfolioStackedLayoutProps {
   piece: PortfolioDetailType;
   navigation: PortfolioNavigation | null;
 }
+
+// Helper function to check if media is a video
+const isVideo = (media: PortfolioMedia): media is PortfolioVideo => {
+  return media.src.endsWith('.mp4') || media.src.endsWith('.webm') || media.src.endsWith('.mov');
+};
 
 export default function PortfolioStackedLayout({ piece, navigation }: PortfolioStackedLayoutProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -215,34 +221,121 @@ export default function PortfolioStackedLayout({ piece, navigation }: PortfolioS
         className="w-full max-w-[1200px] mx-auto px-6 pb-16"
       >
         <div className="space-y-8">
-          {piece.images?.map((image, index) => (
-                          <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="w-full"
-              >
-                <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
-                  <OptimizedImage
-                    src={image.src}
-                    alt={image.alt || `${piece.title} - Image ${index + 1}`}
-                    width={image.width || 1200}
-                    height={image.height || 800}
-                    className="w-full h-auto object-cover"
-                    priority={index < 3} // Prioritize first 3 images
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 800px, 1200px"
-                    quality={100}
-                  />
-                  {image.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-4">
-                      <p className="text-sm font-medium">{image.caption}</p>
+          {(() => {
+            const mediaItems = piece.images || [];
+            const processedItems: React.ReactElement[] = [];
+            let currentIndex = 0;
+
+            while (currentIndex < mediaItems.length) {
+              const currentMedia = mediaItems[currentIndex];
+              const isCurrentVideo = isVideo(currentMedia);
+              
+              if (isCurrentVideo) {
+                // Find all consecutive videos
+                const videoGroup: typeof mediaItems = [];
+                let videoIndex = currentIndex;
+                
+                while (videoIndex < mediaItems.length && isVideo(mediaItems[videoIndex])) {
+                  videoGroup.push(mediaItems[videoIndex]);
+                  videoIndex++;
+                }
+                
+                // Render video group
+                if (videoGroup.length === 1) {
+                  // Single video - full width
+                  processedItems.push(
+                    <motion.div
+                      key={currentIndex}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.6, delay: currentIndex * 0.1 }}
+                      className="w-full"
+                    >
+                      <OptimizedVideo
+                        src={videoGroup[0].src}
+                        alt={videoGroup[0].alt || `${piece.title} - Video ${currentIndex + 1}`}
+                        width={videoGroup[0].width || 1200}
+                        height={videoGroup[0].height || 800}
+                        caption={videoGroup[0].caption}
+                        poster={(videoGroup[0] as PortfolioVideo).poster}
+                        autoplay={(videoGroup[0] as PortfolioVideo).autoplay}
+                        loop={(videoGroup[0] as PortfolioVideo).loop}
+                        muted={(videoGroup[0] as PortfolioVideo).muted}
+                        priority={currentIndex < 3}
+                      />
+                    </motion.div>
+                  );
+                } else {
+                  // Multiple videos - 50% width grid
+                  processedItems.push(
+                    <motion.div
+                      key={currentIndex}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.6, delay: currentIndex * 0.1 }}
+                      className="w-full"
+                    >
+                      <div className="flex flex-wrap gap-4">
+                        {videoGroup.map((video, videoGroupIndex) => (
+                          <div key={videoGroupIndex} className="w-full md:w-[calc(50%-0.5rem)]">
+                            <OptimizedVideo
+                              src={video.src}
+                              alt={video.alt || `${piece.title} - Video ${currentIndex + videoGroupIndex + 1}`}
+                              width={video.width || 1200}
+                              height={video.height || 800}
+                              caption={video.caption}
+                              poster={(video as PortfolioVideo).poster}
+                              autoplay={(video as PortfolioVideo).autoplay}
+                              loop={(video as PortfolioVideo).loop}
+                              muted={(video as PortfolioVideo).muted}
+                              priority={currentIndex < 3}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                }
+                
+                currentIndex = videoIndex;
+              } else {
+                // Regular image - full width
+                processedItems.push(
+                  <motion.div
+                    key={currentIndex}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.6, delay: currentIndex * 0.1 }}
+                    className="w-full"
+                  >
+                    <div className="relative w-full overflow-hidden rounded-lg shadow-lg">
+                      <OptimizedImage
+                        src={currentMedia.src}
+                        alt={currentMedia.alt || `${piece.title} - Image ${currentIndex + 1}`}
+                        width={currentMedia.width || 1200}
+                        height={currentMedia.height || 800}
+                        className="w-full h-auto object-cover"
+                        priority={currentIndex < 3}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 800px, 1200px"
+                        quality={100}
+                      />
+                      {currentMedia.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-4">
+                          <p className="text-sm font-medium">{currentMedia.caption}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </motion.div>
-          ))}
+                  </motion.div>
+                );
+                currentIndex++;
+              }
+            }
+            
+            return processedItems;
+          })()}
         </div>
       </motion.section>
 

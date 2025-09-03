@@ -126,6 +126,66 @@ export const portfolioData: PortfolioDetail[] = [
         caption: '',
         width: 2732,
         height: 3256
+      },
+      {
+        src: '/media/animations/card-scroll1.mp4',
+        alt: 'Card scroll animation demo',
+        caption: 'Music library scroll concept 1',
+        width: 1200,
+        height: 800,
+        autoplay: false,
+        loop: true,
+        muted: true
+      },
+      {
+        src: '/media/animations/card-scroll2.mp4',
+        alt: 'Card scroll animation demo',
+        caption: 'Music library scroll concept 2',
+        width: 1200,
+        height: 800,
+        autoplay: false,
+        loop: true,
+        muted: true
+      },
+      {
+        src: '/media/animations/card-scroll3.mp4',
+        alt: 'Card scroll animation demo',
+        caption: 'Card scroll animation concept',
+        width: 1200,
+        height: 800,
+        autoplay: false,
+        loop: true,
+        muted: true
+      },
+      {
+        src: '/media/animations/record-player.mp4',
+        alt: 'Streaming player concept',
+        caption: 'Streaming player concept',
+        width: 1200,
+        height: 800,
+        autoplay: false,
+        loop: true,
+        muted: true
+      },
+      {
+        src: '/media/animations/wood-loader.mp4',
+        alt: 'Card scroll animation demo',
+        caption: 'Wood loader animation concept',
+        width: 1200,
+        height: 800,
+        autoplay: false,
+        loop: true,
+        muted: true
+      },
+      {
+        src: '/media/animations/tab-bar1.mp4',
+        alt: 'Card scroll animation demo',
+        caption: 'Moble navigation active state concept',
+        width: 1200,
+        height: 800,
+        autoplay: false,
+        loop: true,
+        muted: true
       }
     ],
     results: {
