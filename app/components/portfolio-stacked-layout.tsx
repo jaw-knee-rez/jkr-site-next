@@ -139,7 +139,7 @@ export default function PortfolioStackedLayout({ piece, navigation }: PortfolioS
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-[800px] mx-auto px-6 py-16"
+        className="w-full max-w-[800px] mx-auto px-6 py-16 pt-30"
       >
         {/* Breadcrumbs */}
         <motion.div variants={itemVariants} className="mb-6">
@@ -156,12 +156,6 @@ export default function PortfolioStackedLayout({ piece, navigation }: PortfolioS
             <span className="px-3 py-1 bg-muted rounded-full text-xs font-medium uppercase tracking-wide">
               {piece.category.replace('-', ' ')}
             </span>
-            <span>•</span>
-            <span>{new Date(piece.date).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long',
-              day: 'numeric'
-            })}</span>
             {piece.isProtected && (
               <>
                 <span>•</span>

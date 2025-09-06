@@ -212,7 +212,7 @@ export const portfolioData: PortfolioDetail[] = [
     id: '2',
     slug: 'sprint-telecommunications',
     title: 'Sprint Digital Tranformation',
-    description: 'Sprint completed a digital tranformation with the help of VML and McKensey & Co. from 2015-2018.',
+    description: 'Sprint completed a digital tranformation with the help of VML and McKensey & Co.',
     thumbnail: {
       src: '/portfolio/tile_sprint.png',
       alt: 'Sprint Telecomms redesign',

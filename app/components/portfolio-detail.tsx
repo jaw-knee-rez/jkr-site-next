@@ -144,7 +144,7 @@ export default function PortfolioDetail({ piece, navigation }: PortfolioDetailPr
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-[800px] mx-auto px-6 py-16 pb-0"
+        className="w-full max-w-[800px] mx-auto px-6 py-16 pb-0 pt-30"
       >
         {/* Breadcrumbs */}
         <motion.div variants={itemVariants} className="mb-6">
