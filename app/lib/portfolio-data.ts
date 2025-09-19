@@ -25,35 +25,56 @@ export const portfolioData: PortfolioDetail[] = [
     layout: 'default',
     images: [
       {
-        src: '/portfolio/jwm-importer/jwm-import-e2e.gif',
+        src: '/portfolio/jwm-importer/jwm-1.png',
         alt: '',
         caption: '',
         width: 800,
         height: 600
       },
       {
-        src: '/portfolio/jwm-importer/jwm-monday-select.png',
+        src: '/portfolio/jwm-importer/jwm-2.png',
         alt: '',
         caption: '',
         width: 800,
         height: 600
       },
       {
-        src: '/portfolio/jwm-importer/jwm-monday-review.png',
+        src: '/portfolio/jwm-importer/jwm-3.png',
         alt: '',
         caption: '',
         width: 800,
         height: 600
       },
       {
-        src: '/portfolio/jwm-importer/jwm-monday-fieldMapping.png',
+        src: '/portfolio/jwm-importer/jwm-4.png',
         alt: '',
         caption: '',
         width: 800,
         height: 600
       },
       {
-        src: '/portfolio/jwm-importer/jwm-monday-success.png',
+        src: '/portfolio/jwm-importer/jwm-5.png',
+        alt: '',
+        caption: '',
+        width: 800,
+        height: 600
+      },
+      {
+        src: '/portfolio/jwm-importer/jwm-6.png',
+        alt: '',
+        caption: '',
+        width: 800,
+        height: 600
+      },
+      {
+        src: '/portfolio/jwm-importer/jwm-7.png',
+        alt: '',
+        caption: '',
+        width: 800,
+        height: 600
+      },
+      {
+        src: '/portfolio/jwm-importer/jwm-8.png',
         alt: '',
         caption: '',
         width: 800,
