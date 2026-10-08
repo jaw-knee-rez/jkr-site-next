@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Brainfish + Ballet case study: designing trustworthy AI and agentic workflows." />
+  <title>Designing the boundary between human intent and machine autonomy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #09090b;
+      --muted: #71717a;
+      --muted-2: #a1a1aa;
+      --subtle: #f4f4f5;
+      --border: #e4e4e7;
+      --border-strong: #d4d4d8;
+      --card: #fafafa;
+      --radius: 14px;
+      --radius-lg: 22px;
+      --max: 1180px;
+      --measure: 760px;
+      --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.04);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Geist", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(255,255,255,.88);
+      border-bottom: 1px solid rgba(228,228,231,.8);
+    }
+    .nav-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .brand svg {
+      width: 34px;
+      height: auto;
+    }
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .nav-links a:hover { color: var(--fg); }
+
+    .progress {
+      position: fixed;
+      top: 71px;
+      left: 0;
+      height: 2px;
+      width: 0;
+      background: var(--fg);
+      z-index: 60;
+    }
+
+    main { overflow: hidden; }
+
+    .hero {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 120px 28px 96px;
+    }
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(48px, 7vw, 92px);
+      line-height: .98;
+      letter-spacing: -0.055em;
+      font-weight: 650;
+    }
+    .hero-deck {
+      margin-top: 34px;
+      max-width: 760px;
+      font-size: clamp(20px, 2.2vw, 28px);
+      line-height: 1.35;
+      color: #3f3f46;
+      letter-spacing: -0.03em;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 26px;
+      margin-top: 48px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 96px 28px;
+    }
+    .section.narrow { max-width: 980px; }
+    .section-label {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .section-index {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding-top: 7px;
+    }
+    h2 {
+      margin: 0 0 26px;
+      font-size: clamp(34px, 4.5vw, 62px);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+      font-weight: 620;
+      max-width: 860px;
+    }
+    h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+    }
+    p {
+      margin: 0 0 18px;
+      color: #3f3f46;
+      max-width: var(--measure);
+    }
+    .lead {
+      font-size: 23px;
+      line-height: 1.45;
+      letter-spacing: -0.025em;
+      color: #27272a;
+    }
+    .divider {
+      max-width: var(--max);
+      height: 1px;
+      background: var(--border);
+      margin: 0 auto;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 44px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 44px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px;
+    }
+    .card .kicker {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 18px;
+    }
+    .card p { margin: 0; font-size: 15px; }
+
+    .visual {
+      margin-top: 46px;
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.75);
+    }
+    .visual strong {
+      display: block;
+      color: #3f3f46;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .visual small {
+      display: block;
+      font-size: 13px;
+      max-width: 420px;
+    }
+
+    .statement {
+      background: #0a0a0b;
+      color: #fff;
+      padding: 124px 28px;
+    }
+    .statement-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+    .statement .eyebrow { color: #a1a1aa; }
+    .statement h2 {
+      max-width: 1050px;
+      margin: 0;
+      color: #fff;
+      font-size: clamp(42px, 6.2vw, 82px);
+    }
+    .statement p {
+      color: #a1a1aa;
+      max-width: 760px;
+      margin-top: 28px;
+      font-size: 20px;
+    }
+
+    .flow {
+      margin-top: 52px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+    .flow-step {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      min-height: 170px;
+      position: relative;
+      background: #fff;
+    }
+    .flow-step .num {
+      color: var(--muted-2);
+      font-size: 12px;
+      margin-bottom: 42px;
+    }
+    .flow-step strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: -0.025em;
+      margin-bottom: 8px;
+    }
+    .flow-step span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .timeline {
+      margin-top: 42px;
+      border-left: 1px solid var(--border-strong);
+      margin-left: 8px;
+    }
+    .timeline-row {
+      position: relative;
+      padding: 0 0 36px 28px;
+    }
+    .timeline-row:before {
+      content: "";
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--fg);
+      position: absolute;
+      left: -5px; top: 7px;
+    }
+    .timeline-row strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 17px;
+    }
+    .timeline-row span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 48px;
+    }
+    .principle {
+      background: #fff;
+      padding: 34px;
+      min-height: 180px;
+    }
+    .principle .n {
+      font-size: 12px;
+      color: var(--muted-2);
+      margin-bottom: 42px;
+    }
+    .principle strong {
+      font-size: 21px;
+      line-height: 1.2;
+      display: block;
+      margin-bottom: 10px;
+      letter-spacing: -0.025em;
+    }
+    .principle span {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 420px;
+    }
+
+    .quote {
+      margin-top: 46px;
+      border-left: 2px solid var(--fg);
+      padding: 6px 0 6px 28px;
+      font-size: clamp(25px, 3.2vw, 40px);
+      line-height: 1.25;
+      letter-spacing: -0.035em;
+      max-width: 920px;
+    }
+
+    .footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 82px 28px 100px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 30px;
+      align-items: end;
+    }
+    .footer-logo svg {
+      width: 46px;
+      height: auto;
+    }
+    .footer p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 14px 0 0;
+    }
+    .footer-right {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    main img { cursor: zoom-in; }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0;
+      background: rgba(9,9,11,.92);
+      cursor: zoom-out;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .2s ease, visibility 0s linear .2s;
+    }
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .2s ease;
+    }
+    .lightbox img {
+      display: block;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      margin: auto 0;
+      flex: none;
+      cursor: zoom-out;
+      transform: scale(.97);
+      transition: transform .2s ease;
+    }
+    .lightbox.open img { transform: scale(1); }
+    .lightbox-close {
+      position: fixed;
+      z-index: 1;
+      top: 20px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      color: #09090b;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    .lightbox-close:hover { background: #fff; }
+    body.lightbox-open { overflow: hidden; }
+
+    @media (max-width: 820px) {
+      .nav-links { display: none; }
+      .hero { padding-top: 84px; }
+      .section-label { grid-template-columns: 1fr; gap: 10px; }
+      .grid-2, .grid-3, .principles, .flow { grid-template-columns: 1fr; }
+      .flow-step { min-height: auto; }
+      .footer { grid-template-columns: 1fr; }
+      .footer-right { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress" class="progress"></div>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="#top" class="brand" aria-label="Back to top">
+        <?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="66.102px" height="60px" viewBox="0 0 66.102 60" enable-background="new 0 0 66.102 60" xml:space="preserve">
+<g>
+	<path fill="#272727" d="M17.403,36.961c0.068,2.68-2.711,5.134-5.42,6.114c-4.911,1.777-9.133-0.849-10.678-5.119
+		c-2.891-7.987,3.945-13.628,10.6-20.346c5.059-5.102,10.209-9.069,15.161-15.387c0,0,3.862-4.142,2.982,0.67
+		s-6.833,37.361-6.833,37.361c3.183-2.967,7.309-7.479,9.614-13.454c0,0,0.23,0.339,0.783,0.866
+		c-3.023,8-6.677,13.112-11.116,16.482l-1.351,7.604c-1.317,7.122-8.689,8.7-10.351,4.109c-1.295-3.581,1.781-7.707,7.556-11.978
+		l6.935-34.966c-2.462,3.955-7.193,7.855-10.765,11.328c-5.607,5.456-11.87,9.955-9.628,16.152c1.047,2.894,3.591,4.181,6.031,3.321
+		c0.693-0.244,1.277-0.701,3.493-4.118C17.141,31.402,17.403,36.961,17.403,36.961z M16.87,52.418l0.808-4.654
+		c-3.202,2.77-3.79,4.591-3.342,5.83C14.802,54.878,16.507,54.574,16.87,52.418z"/>
+	<path fill="#272727" d="M26.368,51.464c-0.767-1.488-0.776-1.709-0.677-2.137c1.164-5.066,1.513-7.86,1.513-7.86
+		c1.709-10.35,3.858-22.213,5.858-26.753c0.929-2.1,2.637-3.027,4.102-3.027c2.44,0,3.369,1.221,3.369,3.076
+		c0,3.955-4.199,10.643-7.226,14.353l-0.781,4.053c1.562-3.271,3.514-5.273,5.662-5.273c2.002,0,2.881,1.367,2.881,3.32
+		c0,3.222-2.489,7.958-6.248,10.058c1.513,2.245,1.219,5.712,2.586,5.712c1.173,0,3.272-2.392,5.42-8.007
+		c0.293,0,1.367,0.39,1.367,0.684c-2.147,5.564-4.442,11.229-7.86,11.229c-3.955,0-3.906-5.613-4.687-8.593h-0.732
+		c-0.44,2.783-2.878,10.022-3,10.777C27.791,53.829,27.136,52.951,26.368,51.464z M36.529,31.41c-1.171,0-2.783,1.66-4.882,6.543
+		l-0.244,1.514c0.586,0,1.123,0.145,1.562,0.292c2.148-1.757,4.395-5.518,4.395-7.372c0-0.488-0.146-0.88-0.587-0.977
+		C36.676,31.41,36.627,31.41,36.529,31.41z M37.848,15.543c0-0.439-0.195-0.684-0.44-0.684c-0.78,0-1.415,2.051-3.173,10.155
+		c1.416-2.636,2.979-6.2,3.564-9.081C37.799,15.788,37.848,15.641,37.848,15.543z"/>
+	<path fill="#272727" d="M47.121,38.1c0-1.466-0.438-2.588-0.977-3.614l-1.953,5.176c0,0-1.367-0.243-1.367-0.635v-0.049
+		c0.88-2.344,1.514-4.785,2.004-7.128c-0.49-1.074-0.88-2.392-0.88-4.101c0-1.563,1.493-4.794,2.274-7.333
+		c0,0,2.195,1.485,2.511,2.353c0.314,0.868-0.587,5.565-1.367,8.105c1.61,1.659,3.71,3.611,3.71,6.396
+		c0,3.124-3.271,8.007-3.271,12.253c0,5.42,3.368,7.471,6.883,7.471c4.297,0,6.688-3.418,6.688-6.982
+		c0-2.147-0.24-5.186-1.822-6.202s1.92-3.074,1.92-3.074c2.686,2.051,4.004,5.126,4.004,8.203c0,5.272-3.857,10.496-10.838,10.496
+		c-5.419,0-10.741-3.613-10.741-9.96C43.899,44.934,47.121,40.589,47.121,38.1z"/>
+	<path fill="#272727" d="M54.965,47.322c0,0.288-0.108,0.533-0.323,0.735c-0.213,0.201-0.512,0.356-0.894,0.466
+		c0.343,0.131,0.596,0.292,0.758,0.481c0.163,0.188,0.245,0.398,0.245,0.629c0,0.453-0.216,0.834-0.648,1.143
+		c-0.431,0.31-0.983,0.463-1.658,0.463c-0.508,0-0.913-0.099-1.216-0.3c-0.302-0.199-0.452-0.464-0.452-0.79
+		c0-0.314,0.109-0.584,0.33-0.807c0.221-0.221,0.558-0.384,1.01-0.487c-0.267-0.129-0.458-0.289-0.574-0.479
+		c-0.117-0.19-0.175-0.39-0.175-0.599c0-0.205,0.055-0.397,0.163-0.577c0.107-0.178,0.26-0.333,0.455-0.467
+		c0.181-0.125,0.403-0.226,0.668-0.299c0.265-0.074,0.531-0.112,0.804-0.112c0.458,0,0.825,0.095,1.098,0.284
+		S54.965,47.034,54.965,47.322z M53.595,50.01c0-0.127-0.034-0.236-0.1-0.324c-0.066-0.089-0.155-0.169-0.267-0.242
+		c-0.12-0.076-0.26-0.152-0.423-0.23c-0.163-0.076-0.321-0.156-0.477-0.238c-0.105,0.104-0.207,0.268-0.305,0.488
+		c-0.099,0.22-0.149,0.452-0.149,0.699c0,0.248,0.065,0.444,0.195,0.587c0.131,0.144,0.305,0.215,0.525,0.215
+		c0.298,0,0.54-0.093,0.723-0.28C53.503,50.495,53.595,50.271,53.595,50.01z M53.878,47.262c0-0.192-0.048-0.351-0.139-0.477
+		c-0.093-0.125-0.226-0.186-0.4-0.186c-0.229,0-0.424,0.085-0.583,0.257c-0.162,0.172-0.242,0.376-0.242,0.612
+		c0,0.117,0.027,0.216,0.079,0.3c0.053,0.082,0.123,0.156,0.213,0.224c0.074,0.054,0.185,0.12,0.33,0.198
+		c0.146,0.077,0.277,0.149,0.396,0.215c0.094-0.146,0.175-0.326,0.243-0.539C53.843,47.654,53.878,47.453,53.878,47.262z"/>
+	<path fill="#272727" d="M56.079,52.331c-0.435,0-0.8-0.096-1.097-0.286s-0.444-0.417-0.444-0.681c0-0.155,0.049-0.286,0.149-0.393
+		c0.101-0.108,0.232-0.161,0.398-0.161c0.174,0,0.313,0.049,0.419,0.146c0.106,0.098,0.16,0.225,0.16,0.38
+		c0,0.109-0.019,0.225-0.057,0.349c-0.036,0.123-0.067,0.218-0.091,0.286c0.036,0.009,0.1,0.022,0.187,0.038
+		c0.089,0.014,0.174,0.021,0.261,0.021c0.111,0,0.232-0.037,0.363-0.108c0.132-0.07,0.252-0.174,0.358-0.308
+		c0.115-0.144,0.208-0.306,0.28-0.485c0.069-0.18,0.104-0.402,0.104-0.667c0-0.247-0.063-0.444-0.187-0.59
+		c-0.125-0.146-0.302-0.219-0.53-0.219c-0.111,0-0.21,0.016-0.297,0.044c-0.087,0.027-0.171,0.065-0.251,0.111
+		c-0.084,0.047-0.155,0.095-0.214,0.142c-0.059,0.046-0.121,0.102-0.187,0.171l-0.244-0.09l0.841-2.45h2.776l-0.207,0.903h-2.507
+		l-0.359,1.104c0.204-0.118,0.39-0.203,0.559-0.255c0.167-0.052,0.352-0.078,0.551-0.078c0.177,0,0.349,0.019,0.512,0.055
+		c0.165,0.035,0.323,0.105,0.477,0.206c0.149,0.097,0.269,0.224,0.357,0.377c0.09,0.154,0.135,0.338,0.135,0.556
+		c0,0.527-0.217,0.974-0.652,1.337C57.21,52.15,56.688,52.331,56.079,52.331z"/>
+</g>
+</svg>
+      </a>
+      <div class="nav-links">
+        <a href="#context">Context</a>
+        <a href="#brainfish">Brainfish</a>
+        <a href="#ballet">Ballet</a>
+        <a href="#principles">Principles</a>
+        <a href="#atticus">Atticus</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="eyebrow">Case study · Brainfish + Ballet</div>
+      <h1>Designing the boundary between human intent and machine autonomy.</h1>
+      <p class="hero-deck">I designed two AI-native products from scratch, moving from knowledge and answering to trusted agentic action for support and operations teams.</p>
+      <div class="hero-meta">
+        <span>Role: Product Design Lead</span>
+        <span>Scope: 0→1 AI product design</span>
+        <span>Focus: Trust, control, agentic systems design, agentic workflows</span>
+      </div>
+      <div class="visual">
+          <img src="hero.png" alt="hero"/>
+      </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <section id="context" class="section">
+      <div class="section-label">
+        <div class="section-index">01 · Context</div>
+        <div>
+          <h2>The problem changed as AI gained agency.</h2>
+          <p class="lead">Brainfish started by helping people find and understand company knowledge. As customers asked AI to do more, the design challenge shifted from answering accurately to acting predictably.</p>
+
+          <div class="flow">
+            <div class="flow-step">
+              <div class="num">01</div>
+              <strong>Answer</strong>
+              <span>Retrieve and synthesize trusted knowledge.</span>
+            </div>
+            <div class="flow-step">
+              <div class="num">02</div>
+              <strong>Recommend</strong>
+              <span>Identify knowledge improvements and propose changes.</span>
+            </div>
+            <div class="flow-step">
+              <div class="num">03</div>
+              <strong>Initiate</strong>
+              <span>Recognise when information is not enough and trigger a procedure.</span>
+            </div>
+            <div class="flow-step">
+              <div class="num">04</div>
+              <strong>Execute</strong>
+              <span>Run complex, connected workflows with bounded AI autonomy.</span>
+            </div>
+          </div>
+
+          <div class="quote">The moment AI moves from answering to acting, the design problem changes from relevance to trust.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="brainfish" class="section">
+      <div class="section-label">
+        <div class="section-index">02 · Brainfish</div>
+        <div>
+          <h2>An AI-native support platform with two core jobs.</h2>
+          <p>Brainfish helps mid-market and enterprise teams manage company knowledge and deploy AI answering experiences across help centres, chat, Slack, Microsoft Teams and API-powered surfaces.</p>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="kicker">Manage knowledge</div>
+              <h3>Self-healing knowledge</h3>
+              <p>Customers centralise content and connect external sources. The Content Management Agent analyses the knowledge base and surfaces Knowledge Discoveries for review and approval.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Deploy experiences</div>
+              <h3>Answer &amp; act anywhere</h3>
+              <p>The Answering Agent powers multiple channels. I designed the conversational experience and the control plane that defines knowledge, behaviour, style and custom instructions.</p>
+            </div>
+          </div>
+
+          <div class="visual">
+            <img src="_1.png" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="statement">
+      <div class="statement-inner">
+        <div class="eyebrow">What we learned</div>
+        <h2>Customers said they wanted autopilot. In practice, they wanted control.</h2>
+        <p>As AI became more capable, trust came less from hiding complexity and more from giving users the right visibility and authority at the right moment.</p>
+      </div>
+    </section>
+
+    <section class="statement">
+      <div class="statement-inner">
+        <div class="eyebrow">Design principle</div>
+        <h2>Deterministic where reliability matters. Agentic where judgement adds value.</h2>
+      </div>
+    </section>
+
+    <section id="ballet" class="section">
+      <div class="section-label">
+        <div class="section-index">03 · Ballet</div>
+        <div>
+          <h2>Turning ambiguous intent into executable workflows.</h2>
+          <p class="lead">Ballet lets non-technical teams create complex support and operations workflows. AI helps plan and build the workflow, while the execution model remains explicit and inspectable.<br/><br/>You can use a Ballet workflow on it's own within the product, or you can reference a workflow in Brainfish within a Procedure.</p>
+
+          <div class="timeline">
+            <div class="timeline-row">
+              <strong>1. Planning Agent</strong>
+              <span>Conversation helps a knowledge worker move from a desired outcome to a well-structured workflow.</span>
+            </div>
+            <div class="timeline-row">
+              <strong>2. Human review</strong>
+              <span>The user validates intent before the system is given execution autonomy.</span>
+            </div>
+            <div class="timeline-row">
+              <strong>3. Builder Agent</strong>
+              <span>The reviewed plan becomes coded, deterministic workflow steps.</span>
+            </div>
+            <div class="timeline-row">
+              <strong>4. Agents + Tools</strong>
+              <span>Agents are added only where judgement or autonomous action is valuable. Tools connect steps to external systems and data.</span>
+            </div>
+            <div class="timeline-row">
+              <strong>5. Test + inspect</strong>
+              <span>Users can run real, mock or manual inputs, inspect every step, and validate inputs and outputs before deployment.</span>
+            </div>
+            <div class="timeline-row">
+              <strong>6. Deploy + recover</strong>
+              <span>Workflows run manually or via webhooks. When a step fails, the Builder Agent helps diagnose and repair the issue.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">
+        <div class="section-index">04 · Interaction model</div>
+        <div>
+          <h2>Conversation is useful when the problem is still ambiguous.</h2>
+          <p>Most users told us they already knew the workflow they wanted to build. In practice, they often knew the outcome, but struggled to describe the underlying process.</p>
+          <p>The Planning Agent turns that ambiguity into structure, then hands a reviewed plan to the Builder Agent.</p>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="kicker">Planning Agent</div>
+              <h3>Ambiguity → intent</h3>
+              <p>Clarifies the goal, required systems, conditions, data and expected outcomes through conversation.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Builder Agent</div>
+              <h3>Intent → implementation</h3>
+              <p>Creates deterministic steps, connects tools, configures agents and prepares the workflow for test and execution.</p>
+            </div>
+          </div>
+
+          <div class="visual">
+              <img src="_4.png" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">
+        <div class="section-index">05 · Transparency</div>
+        <div>
+          <h2>Power without technical overload.</h2>
+          <p class="lead">Traditional node-based workflow builders exposed too much implementation detail. Even when users tolerated some technical complexity, they quickly became confused and abandoned the experience.</p>
+
+          <div class="grid-3">
+            <div class="card">
+              <div class="kicker">Level 1</div>
+              <h3>Outcome</h3>
+              <p>What will happen? Human-readable steps make the workflow understandable at a glance.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Level 2</div>
+              <h3>Logic</h3>
+              <p>How will it happen? Users can inspect conditions, inputs, outputs and relationships between steps.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Level 3</div>
+              <h3>Intelligence</h3>
+              <p>What is the agent actually doing? Reveal context, tools and behaviour when deeper understanding is required.</p>
+            </div>
+          </div>
+
+          <div class="quote">We stopped treating transparency as “show everything” and designed for progressive technical transparency instead.</div>
+
+          <div class="visual">
+            <img src="_5.png" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">
+        <div class="section-index">06 · Trust</div>
+        <div>
+          <h2>Make the system inspectable before asking users to trust it.</h2>
+          <p>Users can test workflows with real data, mock data or manual inputs, then inspect a run audit for every step, including its inputs and outputs.</p>
+
+          <div class="flow">
+            <div class="flow-step">
+              <div class="num">01</div>
+              <strong>Build</strong>
+              <span>Create the workflow through Planning and Builder Agents.</span>
+            </div>
+            <div class="flow-step">
+              <div class="num">02</div>
+              <strong>Test</strong>
+              <span>Use controlled data before deployment.</span>
+            </div>
+            <div class="flow-step">
+              <div class="num">03</div>
+              <strong>Inspect</strong>
+              <span>Understand what happened at every step.</span>
+            </div>
+            <div class="flow-step">
+              <div class="num">04</div>
+              <strong>Refine</strong>
+              <span>Repair or adjust before giving the workflow more autonomy.</span>
+            </div>
+          </div>
+
+          <div class="visual">
+              <img src="_6.png" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">
+        <div class="section-index">07 · Recovery</div>
+        <div>
+          <h2>Failure is part of the experience.</h2>
+          <p class="lead">Technical accuracy isn’t the same as useful system feedback.</p>
+          <p>When a workflow fails, Ballet surfaces system status and gives the user a path to ask the Builder Agent to diagnose what happened and attempt a repair.</p>
+          <div class="quote">A trustworthy agentic product needs to help users recover, not just explain why the system failed.</div>
+
+          <div class="visual">
+              <img src="_7.png" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">
+        <div class="section-index">08 · Live learning</div>
+        <div>
+          <h2>Designing toward self-service through real operational complexity.</h2>
+          <p>Ballet is live with a small number of customers today. We currently use an FDE model to help build workflows, which gives me direct feedback from the people using the product in real customer contexts.</p>
+          <p>The next threshold is PLG: not whether Ballet can build complex workflows, but whether someone without an FDE can understand, trust, repair and deploy one.</p>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="kicker">Internal analytics</div>
+              <h3>Measure the creation experience</h3>
+              <p>We monitor time-to-build, context drop-out, workflow creation and completion to understand where the experience breaks down.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Customer analytics</div>
+              <h3>Make workflow outcomes visible</h3>
+              <p>An Analytics Agent is being designed to generate workflow-specific dashboards based on steps, runs and connected systems.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">
+        <div class="section-index">09 · Learning</div>
+        <div>
+          <h2>Three assumptions changed the product direction.</h2>
+          <div class="grid-3">
+            <div class="card">
+              <div class="kicker">Autopilot</div>
+              <h3>Automation did not equal trust.</h3>
+              <p>Customers valued AI recommendations, but often wanted to review and approve what became authoritative knowledge.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Signal</div>
+              <h3>More intelligence created more noise.</h3>
+              <p>Computer Vision helped surface Knowledge Discoveries, but generated too much noise when customers were deciding which sessions should influence their knowledge.</p>
+            </div>
+            <div class="card">
+              <div class="kicker">Control</div>
+              <h3>Flexible instructions were not predictable enough.</h3>
+              <p>Custom Instructions gave customers freedom, but many did not know what to write or still wanted stronger behavioural control. That learning helped lead to Procedures.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="principles" class="section">
+      <div class="section-label">
+        <div class="section-index">10 · Principles</div>
+        <div>
+          <h2>What I learned designing agentic systems.</h2>
+          <div class="principles">
+            <div class="principle"><div class="n">01</div><strong>Autonomy must be earned through trust.</strong><span>Increase autonomy as users gain evidence that the system behaves predictably.</span></div>
+            <div class="principle"><div class="n">02</div><strong>Use conversation to structure ambiguity.</strong><span>Chat is useful when neither the user nor the system has enough structure yet.</span></div>
+            <div class="principle"><div class="n">03</div><strong>Establish intent before execution.</strong><span>Separate planning from building, and give humans a clear review boundary.</span></div>
+            <div class="principle"><div class="n">04</div><strong>Keep consequential work deterministic.</strong><span>Use Agents selectively where judgement adds value, not because every step can be agentic.</span></div>
+            <div class="principle"><div class="n">05</div><strong>Reveal complexity progressively.</strong><span>Start with what will happen, then expose how and why when users need deeper control.</span></div>
+            <div class="principle"><div class="n">06</div><strong>Make AI inspectable.</strong><span>Users need to understand what happened, what data was used and what each Agent actually did.</span></div>
+            <div class="principle"><div class="n">07</div><strong>Design recovery as deliberately as success.</strong><span>Failure handling, diagnosis and repair are core parts of autonomous products.</span></div>
+            <div class="principle"><div class="n">08</div><strong>Expert-assisted success does not equal self-service success.</strong><span>The standard changes when a customer has to understand and operate the system alone.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="atticus" class="statement">
+      <div class="statement-inner">
+        <div class="eyebrow">Why this matters for Atticus</div>
+        <h2>Different domain. Similar design problem.</h2>
+        <p>My work has focused on designing the boundary between human intent and machine autonomy: how people establish what they want, how AI translates that intent into action, and how those actions remain understandable, controllable and trustworthy.</p>
+        <p>That same tension is what makes high-stakes, evidence-driven AI products compelling to me.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <div class="footer-logo"><?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="66.102px" height="60px" viewBox="0 0 66.102 60" enable-background="new 0 0 66.102 60" xml:space="preserve">
+<g>
+	<path fill="#272727" d="M17.403,36.961c0.068,2.68-2.711,5.134-5.42,6.114c-4.911,1.777-9.133-0.849-10.678-5.119
+		c-2.891-7.987,3.945-13.628,10.6-20.346c5.059-5.102,10.209-9.069,15.161-15.387c0,0,3.862-4.142,2.982,0.67
+		s-6.833,37.361-6.833,37.361c3.183-2.967,7.309-7.479,9.614-13.454c0,0,0.23,0.339,0.783,0.866
+		c-3.023,8-6.677,13.112-11.116,16.482l-1.351,7.604c-1.317,7.122-8.689,8.7-10.351,4.109c-1.295-3.581,1.781-7.707,7.556-11.978
+		l6.935-34.966c-2.462,3.955-7.193,7.855-10.765,11.328c-5.607,5.456-11.87,9.955-9.628,16.152c1.047,2.894,3.591,4.181,6.031,3.321
+		c0.693-0.244,1.277-0.701,3.493-4.118C17.141,31.402,17.403,36.961,17.403,36.961z M16.87,52.418l0.808-4.654
+		c-3.202,2.77-3.79,4.591-3.342,5.83C14.802,54.878,16.507,54.574,16.87,52.418z"/>
+	<path fill="#272727" d="M26.368,51.464c-0.767-1.488-0.776-1.709-0.677-2.137c1.164-5.066,1.513-7.86,1.513-7.86
+		c1.709-10.35,3.858-22.213,5.858-26.753c0.929-2.1,2.637-3.027,4.102-3.027c2.44,0,3.369,1.221,3.369,3.076
+		c0,3.955-4.199,10.643-7.226,14.353l-0.781,4.053c1.562-3.271,3.514-5.273,5.662-5.273c2.002,0,2.881,1.367,2.881,3.32
+		c0,3.222-2.489,7.958-6.248,10.058c1.513,2.245,1.219,5.712,2.586,5.712c1.173,0,3.272-2.392,5.42-8.007
+		c0.293,0,1.367,0.39,1.367,0.684c-2.147,5.564-4.442,11.229-7.86,11.229c-3.955,0-3.906-5.613-4.687-8.593h-0.732
+		c-0.44,2.783-2.878,10.022-3,10.777C27.791,53.829,27.136,52.951,26.368,51.464z M36.529,31.41c-1.171,0-2.783,1.66-4.882,6.543
+		l-0.244,1.514c0.586,0,1.123,0.145,1.562,0.292c2.148-1.757,4.395-5.518,4.395-7.372c0-0.488-0.146-0.88-0.587-0.977
+		C36.676,31.41,36.627,31.41,36.529,31.41z M37.848,15.543c0-0.439-0.195-0.684-0.44-0.684c-0.78,0-1.415,2.051-3.173,10.155
+		c1.416-2.636,2.979-6.2,3.564-9.081C37.799,15.788,37.848,15.641,37.848,15.543z"/>
+	<path fill="#272727" d="M47.121,38.1c0-1.466-0.438-2.588-0.977-3.614l-1.953,5.176c0,0-1.367-0.243-1.367-0.635v-0.049
+		c0.88-2.344,1.514-4.785,2.004-7.128c-0.49-1.074-0.88-2.392-0.88-4.101c0-1.563,1.493-4.794,2.274-7.333
+		c0,0,2.195,1.485,2.511,2.353c0.314,0.868-0.587,5.565-1.367,8.105c1.61,1.659,3.71,3.611,3.71,6.396
+		c0,3.124-3.271,8.007-3.271,12.253c0,5.42,3.368,7.471,6.883,7.471c4.297,0,6.688-3.418,6.688-6.982
+		c0-2.147-0.24-5.186-1.822-6.202s1.92-3.074,1.92-3.074c2.686,2.051,4.004,5.126,4.004,8.203c0,5.272-3.857,10.496-10.838,10.496
+		c-5.419,0-10.741-3.613-10.741-9.96C43.899,44.934,47.121,40.589,47.121,38.1z"/>
+	<path fill="#272727" d="M54.965,47.322c0,0.288-0.108,0.533-0.323,0.735c-0.213,0.201-0.512,0.356-0.894,0.466
+		c0.343,0.131,0.596,0.292,0.758,0.481c0.163,0.188,0.245,0.398,0.245,0.629c0,0.453-0.216,0.834-0.648,1.143
+		c-0.431,0.31-0.983,0.463-1.658,0.463c-0.508,0-0.913-0.099-1.216-0.3c-0.302-0.199-0.452-0.464-0.452-0.79
+		c0-0.314,0.109-0.584,0.33-0.807c0.221-0.221,0.558-0.384,1.01-0.487c-0.267-0.129-0.458-0.289-0.574-0.479
+		c-0.117-0.19-0.175-0.39-0.175-0.599c0-0.205,0.055-0.397,0.163-0.577c0.107-0.178,0.26-0.333,0.455-0.467
+		c0.181-0.125,0.403-0.226,0.668-0.299c0.265-0.074,0.531-0.112,0.804-0.112c0.458,0,0.825,0.095,1.098,0.284
+		S54.965,47.034,54.965,47.322z M53.595,50.01c0-0.127-0.034-0.236-0.1-0.324c-0.066-0.089-0.155-0.169-0.267-0.242
+		c-0.12-0.076-0.26-0.152-0.423-0.23c-0.163-0.076-0.321-0.156-0.477-0.238c-0.105,0.104-0.207,0.268-0.305,0.488
+		c-0.099,0.22-0.149,0.452-0.149,0.699c0,0.248,0.065,0.444,0.195,0.587c0.131,0.144,0.305,0.215,0.525,0.215
+		c0.298,0,0.54-0.093,0.723-0.28C53.503,50.495,53.595,50.271,53.595,50.01z M53.878,47.262c0-0.192-0.048-0.351-0.139-0.477
+		c-0.093-0.125-0.226-0.186-0.4-0.186c-0.229,0-0.424,0.085-0.583,0.257c-0.162,0.172-0.242,0.376-0.242,0.612
+		c0,0.117,0.027,0.216,0.079,0.3c0.053,0.082,0.123,0.156,0.213,0.224c0.074,0.054,0.185,0.12,0.33,0.198
+		c0.146,0.077,0.277,0.149,0.396,0.215c0.094-0.146,0.175-0.326,0.243-0.539C53.843,47.654,53.878,47.453,53.878,47.262z"/>
+	<path fill="#272727" d="M56.079,52.331c-0.435,0-0.8-0.096-1.097-0.286s-0.444-0.417-0.444-0.681c0-0.155,0.049-0.286,0.149-0.393
+		c0.101-0.108,0.232-0.161,0.398-0.161c0.174,0,0.313,0.049,0.419,0.146c0.106,0.098,0.16,0.225,0.16,0.38
+		c0,0.109-0.019,0.225-0.057,0.349c-0.036,0.123-0.067,0.218-0.091,0.286c0.036,0.009,0.1,0.022,0.187,0.038
+		c0.089,0.014,0.174,0.021,0.261,0.021c0.111,0,0.232-0.037,0.363-0.108c0.132-0.07,0.252-0.174,0.358-0.308
+		c0.115-0.144,0.208-0.306,0.28-0.485c0.069-0.18,0.104-0.402,0.104-0.667c0-0.247-0.063-0.444-0.187-0.59
+		c-0.125-0.146-0.302-0.219-0.53-0.219c-0.111,0-0.21,0.016-0.297,0.044c-0.087,0.027-0.171,0.065-0.251,0.111
+		c-0.084,0.047-0.155,0.095-0.214,0.142c-0.059,0.046-0.121,0.102-0.187,0.171l-0.244-0.09l0.841-2.45h2.776l-0.207,0.903h-2.507
+		l-0.359,1.104c0.204-0.118,0.39-0.203,0.559-0.255c0.167-0.052,0.352-0.078,0.551-0.078c0.177,0,0.349,0.019,0.512,0.055
+		c0.165,0.035,0.323,0.105,0.477,0.206c0.149,0.097,0.269,0.224,0.357,0.377c0.09,0.154,0.135,0.338,0.135,0.556
+		c0,0.527-0.217,0.974-0.652,1.337C57.21,52.15,56.688,52.331,56.079,52.331z"/>
+</g>
+</svg>
+</div>
+      <p>Product design · AI-native systems · Agentic workflows</p>
+    </div>
+    <div class="footer-right">Case study prepared for Atticus</div>
+  </footer>
+
+  <script>
+    const progress = document.getElementById('progress');
+    const updateProgress = () => {
+      const h = document.documentElement;
+      const total = h.scrollHeight - h.clientHeight;
+      progress.style.width = total > 0 ? ((h.scrollTop / total) * 100) + '%' : '0%';
+    };
+    document.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+
+    // Image lightbox: click any image in <main> to expand it full screen.
+    // Dismiss with a click anywhere, the close button, or Escape.
+    (() => {
+      const box = document.createElement('div');
+      box.className = 'lightbox';
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-modal', 'true');
+      box.setAttribute('aria-label', 'Expanded image');
+      box.innerHTML = '<button class="lightbox-close" type="button" aria-label="Close image">&times;</button><img alt="" />';
+      document.body.appendChild(box);
+
+      const full = box.querySelector('img');
+      const closeBtn = box.querySelector('.lightbox-close');
+      let trigger = null;
+
+      const open = (img) => {
+        trigger = img;
+        full.src = img.currentSrc || img.src;
+        full.alt = img.alt;
+        box.scrollTop = 0;
+        box.classList.add('open');
+        document.body.classList.add('lightbox-open');
+        closeBtn.focus({ preventScroll: true });
+      };
+
+      const close = () => {
+        if (!box.classList.contains('open')) return;
+        box.classList.remove('open');
+        document.body.classList.remove('lightbox-open');
+        if (trigger) trigger.focus({ preventScroll: true });
+        trigger = null;
+      };
+
+      document.querySelectorAll('main img').forEach((img) => {
+        img.tabIndex = 0;
+        img.setAttribute('role', 'button');
+        img.addEventListener('click', () => open(img));
+        img.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(img); }
+        });
+      });
+
+      box.addEventListener('click', close);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    })();
+  </script>
+</body>
+</html>
