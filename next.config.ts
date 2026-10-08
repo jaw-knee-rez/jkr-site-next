@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      // Serve the static page in public/atticus at /atticus
+      // (Next only serves public/atticus/index.html at the explicit file path).
+      { source: '/atticus', destination: '/atticus/index.html' },
+    ];
+  },
 };
 
 export default nextConfig;
