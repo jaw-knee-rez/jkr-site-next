@@ -35,22 +35,11 @@ export default function BrowserCompatibilityTest() {
   const [testResults, setTestResults] = useState<CompatibilityTestResult[]>([]);
   const [browserInfo, setBrowserInfo] = useState<BrowserInfo | null>(null);
   const [featureSupport, setFeatureSupport] = useState<FeatureSupport[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
-
-  useEffect(() => {
-    // Only show in development mode and ensure we're on client side
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-      setIsVisible(true);
-      // Delay the test run to ensure component is fully mounted
-      setTimeout(() => {
-        runCompatibilityTests();
-      }, 100);
-    }
-  }, []);
+  // Only show in development mode (NODE_ENV is inlined at build time, so server and client agree)
+  const isVisible = process.env.NODE_ENV === 'development';
+  const [isRunning, setIsRunning] = useState(isVisible);
 
   const runCompatibilityTests = async () => {
-    setIsRunning(true);
     try {
       const results = await browserCompatibilityTester.runAllTests();
       setTestResults(results);
@@ -61,6 +50,22 @@ export default function BrowserCompatibilityTest() {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  useEffect(() => {
+    if (!isVisible) return;
+    // Delay the test run to ensure component is fully mounted.
+    // isRunning starts as true so no synchronous setState is needed here.
+    const timer = setTimeout(() => {
+      runCompatibilityTests();
+    }, 100);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleRerun = () => {
+    setIsRunning(true);
+    runCompatibilityTests();
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -174,7 +179,7 @@ export default function BrowserCompatibilityTest() {
         {/* Controls */}
         <div className="space-y-2">
           <button
-            onClick={runCompatibilityTests}
+            onClick={handleRerun}
             disabled={isRunning}
             className="w-full px-3 py-2 bg-accent text-accent-foreground rounded text-xs font-medium hover:bg-accent/80 transition-colors disabled:opacity-50"
           >

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { PortfolioImage } from '../types/portfolio';
@@ -16,10 +16,21 @@ interface ImageModalProps {
 export default function ImageModal({ images, initialIndex, isOpen, onClose }: ImageModalProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-  // Update current index when initialIndex changes
-  useEffect(() => {
+  const [prevInitialIndex, setPrevInitialIndex] = useState(initialIndex);
+
+  // Reset current index when initialIndex changes (adjusting state during render)
+  if (prevInitialIndex !== initialIndex) {
+    setPrevInitialIndex(initialIndex);
     setCurrentIndex(initialIndex);
-  }, [initialIndex]);
+  }
+
+  const navigateToPrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  }, [images.length]);
+
+  const navigateToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  }, [images.length]);
 
   // Handle keyboard navigation and scroll locking
   useEffect(() => {
@@ -50,15 +61,7 @@ export default function ImageModal({ images, initialIndex, isOpen, onClose }: Im
       document.body.style.overflow = originalStyle;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, currentIndex, onClose]);
-
-  const navigateToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const navigateToNext = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
+  }, [isOpen, onClose, navigateToPrevious, navigateToNext]);
 
   const currentImage = images[currentIndex];
 

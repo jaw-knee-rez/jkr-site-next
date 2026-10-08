@@ -10,13 +10,15 @@ interface PageTransitionProps {
 
 export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(false);
+  const [visiblePath, setVisiblePath] = useState<string | null>(null);
+
+  // Content is hidden until the delay elapses for the current path
+  const isVisible = visiblePath === pathname;
 
   // Handle page transitions
   useEffect(() => {
-    setIsVisible(false);
     const timer = setTimeout(() => {
-      setIsVisible(true);
+      setVisiblePath(pathname);
     }, 100);
     
     return () => clearTimeout(timer);

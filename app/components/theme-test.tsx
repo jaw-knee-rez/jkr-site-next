@@ -14,34 +14,34 @@ interface ThemeTestResult {
 export default function ThemeTest() {
   const { theme, toggleTheme, isTransitioning } = useTheme();
   const [testResults, setTestResults] = useState<ThemeTestResult[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+  // Only show in development mode (NODE_ENV is inlined at build time, so server and client agree)
+  const isVisible = process.env.NODE_ENV === 'development';
 
-  useEffect(() => {
-    // Only show in development mode and ensure we're on client side
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-      setIsVisible(true);
-      runThemeTests();
-    }
-  }, []);
+  // State is only updated in the promise callback, i.e. asynchronously
+  const runThemeTests = () =>
+    themeTester.runAllTests().then((results) => {
+      const formattedResults: ThemeTestResult[] = results.map(result => ({
+        test: result.message.split(':')[0] || result.message,
+        status: result.passed ? 'pass' : 'fail',
+        details: result.details ? JSON.stringify(result.details) : undefined
+      }));
 
-  const runThemeTests = async () => {
-    const results = await themeTester.runAllTests();
-    
-    const formattedResults: ThemeTestResult[] = results.map(result => ({
-      test: result.message.split(':')[0] || result.message,
-      status: result.passed ? 'pass' : 'fail',
-      details: result.details ? JSON.stringify(result.details) : undefined
-    }));
+      // Add component-specific tests
+      formattedResults.push({
+        test: 'Theme Context State',
+        status: 'pass',
+        details: `Current theme: ${theme}, Transitioning: ${isTransitioning}`
+      });
 
-    // Add component-specific tests
-    formattedResults.push({
-      test: 'Theme Context State',
-      status: 'pass',
-      details: `Current theme: ${theme}, Transitioning: ${isTransitioning}`
+      setTestResults(formattedResults);
     });
 
-    setTestResults(formattedResults);
-  };
+  useEffect(() => {
+    if (!isVisible) return;
+    runThemeTests();
+    // Intentionally run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleToggleTest = () => {
     const beforeTheme = theme;

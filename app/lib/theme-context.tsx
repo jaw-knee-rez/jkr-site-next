@@ -18,15 +18,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    // Get theme from localStorage or default to light mode
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      // Default to light mode
-      setTheme('light');
-    }
+    // Read the persisted theme from localStorage after mount. This must happen in an
+    // effect (localStorage is unavailable during SSR and reading it earlier would
+    // cause a hydration mismatch), so the synchronous setState here is intentional.
+    const savedTheme = localStorage.getItem('theme') as Theme | null;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setTheme(savedTheme ?? 'light');
     setMounted(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {

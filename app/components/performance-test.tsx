@@ -15,27 +15,34 @@ interface PerformanceTestResult {
 
 export default function PerformanceTest() {
   const [testResults, setTestResults] = useState<PerformanceTestResult[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
+  // Only show in development mode (NODE_ENV is inlined at build time, so server and client agree)
+  const isVisible = process.env.NODE_ENV === 'development';
+  const [isRunning, setIsRunning] = useState(isVisible);
+
+  // State is only updated in promise callbacks, i.e. asynchronously
+  const runPerformanceTests = () =>
+    performanceTester
+      .runAllTests()
+      .then((results) => {
+        setTestResults(results);
+      })
+      .catch((error) => {
+        console.error('Performance testing failed:', error);
+      })
+      .finally(() => {
+        setIsRunning(false);
+      });
 
   useEffect(() => {
-    // Only show in development mode and ensure we're on client side
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-      setIsVisible(true);
-      runPerformanceTests();
-    }
+    if (!isVisible) return;
+    // Initial run; isRunning starts as true so no synchronous setState is needed here
+    runPerformanceTests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const runPerformanceTests = async () => {
+  const handleRerun = () => {
     setIsRunning(true);
-    try {
-      const results = await performanceTester.runAllTests();
-      setTestResults(results);
-    } catch (error) {
-      console.error('Performance testing failed:', error);
-    } finally {
-      setIsRunning(false);
-    }
+    runPerformanceTests();
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -136,7 +143,7 @@ export default function PerformanceTest() {
         {/* Controls */}
         <div className="space-y-2">
           <button
-            onClick={runPerformanceTests}
+            onClick={handleRerun}
             disabled={isRunning}
             className="w-full px-3 py-2 bg-accent text-accent-foreground rounded text-xs font-medium hover:bg-accent/80 transition-colors disabled:opacity-50"
           >

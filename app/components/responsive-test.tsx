@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface ScreenSize {
@@ -21,14 +21,8 @@ const screenSizes: ScreenSize[] = [
 
 export default function ResponsiveTest() {
   const [currentSize, setCurrentSize] = useState<ScreenSize>(screenSizes[0]);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    // Only show in development mode
-    if (process.env.NODE_ENV === 'development') {
-      setIsVisible(true);
-    }
-  }, []);
+  // Only show in development mode
+  const isVisible = process.env.NODE_ENV === 'development';
 
   if (!isVisible) return null;
 

@@ -14,27 +14,34 @@ interface AccessibilityTestResult {
 
 export default function AccessibilityTest() {
   const [testResults, setTestResults] = useState<AccessibilityTestResult[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
+  // Only show in development mode (NODE_ENV is inlined at build time, so server and client agree)
+  const isVisible = process.env.NODE_ENV === 'development';
+  const [isRunning, setIsRunning] = useState(isVisible);
+
+  // State is only updated in promise callbacks, i.e. asynchronously
+  const runAccessibilityTests = () =>
+    accessibilityTester
+      .runAllTests()
+      .then((results) => {
+        setTestResults(results);
+      })
+      .catch((error) => {
+        console.error('Accessibility testing failed:', error);
+      })
+      .finally(() => {
+        setIsRunning(false);
+      });
 
   useEffect(() => {
-    // Only show in development mode and ensure we're on client side
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-      setIsVisible(true);
-      runAccessibilityTests();
-    }
+    if (!isVisible) return;
+    // Initial run; isRunning starts as true so no synchronous setState is needed here
+    runAccessibilityTests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const runAccessibilityTests = async () => {
+  const handleRerun = () => {
     setIsRunning(true);
-    try {
-      const results = await accessibilityTester.runAllTests();
-      setTestResults(results);
-    } catch (error) {
-      console.error('Accessibility testing failed:', error);
-    } finally {
-      setIsRunning(false);
-    }
+    runAccessibilityTests();
   };
 
   const getSeverityColor = (severity: string) => {
@@ -126,7 +133,7 @@ export default function AccessibilityTest() {
         {/* Controls */}
         <div className="space-y-2">
           <button
-            onClick={runAccessibilityTests}
+            onClick={handleRerun}
             disabled={isRunning}
             className="w-full px-3 py-2 bg-accent text-accent-foreground rounded text-xs font-medium hover:bg-accent/80 transition-colors disabled:opacity-50"
           >

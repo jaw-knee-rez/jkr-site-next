@@ -40,21 +40,19 @@ export default function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [isInView, setIsInView] = useState(false);
+  const [hasEnteredView, setHasEnteredView] = useState(false);
+  const isInView = priority || hasEnteredView;
   const imageRef = useRef<HTMLDivElement>(null);
   const loadStartTime = useRef<number>(0);
 
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (priority) {
-      setIsInView(true);
-      return;
-    }
+    if (priority) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsInView(true);
+          setHasEnteredView(true);
           loadStartTime.current = performance.now();
           observer.disconnect();
         }
